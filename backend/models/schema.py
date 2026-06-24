@@ -1,10 +1,11 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 # A single cited chunk
 class Citation(BaseModel):
     text: str = Field(description="The text of the cited chunk.")
-    score: int = Field(description="The score of the cited chunk.")
+    score: float = Field(description="The score of the cited chunk.")
     doc_id: str = Field(description="The document ID of the cited chunk.")
     chunk_index: int = Field(description="The index of the chunk in the document.")
 
@@ -32,7 +33,7 @@ class DocumentInfo(BaseModel):
     file_size: int = Field(description="The size of the uploaded document.")
     content_type: str = Field(description="The content type of the uploaded document.")
     chunk_count: int = Field(description="The number of chunks created from the uploaded document.")
-    uploaded_at: str = Field(description="The timestamp when the document was uploaded.")
+    uploaded_at: datetime = Field(description="The timestamp when the document was uploaded.")
 
 # Error payload
 class ErrorResponse(BaseModel):
