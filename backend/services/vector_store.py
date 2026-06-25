@@ -1,5 +1,5 @@
 """Vector store service for managing vector embeddings."""
-from qdrant_client import QdrantClient, models
+from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import Distance, VectorParams
 from config import settings
 from services.embeddings import EmbeddingService
@@ -9,21 +9,21 @@ class VectorStoreService:
     def __init__(self, embedder: EmbeddingService):
         # using :memory: for prototyping, use cloud for production
         if settings.qdrant_url == "http://localhost:6333":
-            self.client = QdrantClient(":memory:")
+            self.client = AsyncQdrantClient(":memory:")
         else:
-            self.client = QdrantClient(
+            self.client = AsyncQdrantClient(
                 url = settings.qdrant_url,
                 api_key = settings.qdrant_api_key
             )
         self.embedder = embedder
         self.collection_name = settings.qdrant_collection
     
-    def get_collection(self):
+    async def get_collection(self):
         """Get the collection from Qdrant, create if it doesn't exist."""
         try:
-            self.client.collection_exists(collection_name=self.collection_name)
+            await self.client.collection_exists(collection_name=self.collection_name)
         except Exception:
-            self.client.create_collection(
+            await self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(
                     size=1024,
@@ -31,10 +31,10 @@ class VectorStoreService:
                 )
             )
     
-    def index_document(self, chunks: list[dict]) -> int:
+    async def index_document(self, chunks: list[dict]) -> int:
         """Index the given document chunks into Qdrant."""
         texts = [chunk["chunk_text"] for chunk in chunks]
-        embeddings = self.embedder.embed_documents(texts)
+        embeddings = await self.embedder.embed_documents(texts)
 
         points = [
             models.PointStruct(
@@ -49,15 +49,15 @@ class VectorStoreService:
             )
             for chunk, embeddings in zip(chunks, embeddings)
         ]
-        self.client.upsert(
+        await self.client.upsert(
             collection_name=self.collection_name,
             points=points
         )
         return len(points)
     
-    def search(self, query_vector: list[float], top_k: int) -> list[dict]:
+    async def search(self, query_vector: list[float], top_k: int) -> list[dict]:
         """Search for the top_k most similar documents to the given query vector."""
-        result = self.client.query_points(
+        result = await self.client.query_points(
             collection_name=self.collection_name,
             query=query_vector,
             limit=top_k,

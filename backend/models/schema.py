@@ -11,12 +11,12 @@ class Citation(BaseModel):
 
 # User's query
 class QueryRequest(BaseModel):
-    question: str = Field(min_length=1, max_length=2000, description="The user's question to be answered.")
+    query: str = Field(min_length=1, max_length=2000, description="The user's query to be answered.")
 
 # Answer with citations
 class QueryResponse(BaseModel):
     trace_id: str = Field(description="The trace ID for the request.")
-    answer: str = Field(description="The answer to the user's question.")
+    answer: str = Field(description="The answer to the user's query.")
     citations: list[Citation] = Field(description="A list of cited chunks that support the answer.")
 
 # Upload result

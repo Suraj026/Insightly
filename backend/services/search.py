@@ -56,10 +56,10 @@ class HybridSearchService:
         
         return sorted(scores.values(), key=lambda x: x["score"], reverse=True)
     
-    def search(self, query: str) -> list[dict]:
+    async def search(self, query: str) -> list[dict]:
         """"Runs hybrid search: vector + BM25, fused via RRF."""
-        query_vector = self.embedder.embed_query(query)
-        vector_results = self.vector_store.search(query_vector, settings.vector_top_k)
+        query_vector = await self.embedder.embed_query(query)
+        vector_results = await self.vector_store.search(query_vector, settings.vector_top_k)
         bm25_results = self._bm25_search(query, settings.bm25_top_k)
 
         return self._rrf([vector_results, bm25_results])
